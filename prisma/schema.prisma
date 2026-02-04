@@ -1,0 +1,188 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Énumérations
+enum UserRole {
+  ADMIN
+  AGENT
+  USER
+}
+
+enum PackType {
+  BASIC
+  PREMIUM
+  ENTERPRISE
+}
+
+enum PaymentMethod {
+  CASH
+  ORANGE_MONEY
+  WAVE
+  FREE_MONEY
+  CARD
+  OTHER
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+// Modèle Utilisateur
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  role      UserRole @default(USER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  merchants       Merchant[]
+  createdMerchants Merchant[] @relation("CreatedBy")
+
+  @@map("users")
+}
+
+// Modèle Commerçant
+model Merchant {
+  id            String   @id @default(uuid())
+  businessName  String
+  ownerName     String
+  phoneNumber   String
+  whatsappNumber String?
+  email         String?
+  description   String?
+  category      String?
+  address       String?
+  city          String?
+  country       String   @default("Sénégal")
+  latitude      Float?
+  longitude     Float?
+  logo          String?
+  primaryColor  String?  @default("#667eea")
+  secondaryColor String? @default("#764ba2")
+  useGradient   Boolean  @default(true)
+  coverImage    String?
+  isActive      Boolean  @default(true)
+  isVerified    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  userId          String?
+  user            User?            @relation(fields: [userId], references: [id])
+  createdByUserId String?
+  createdBy       User?            @relation("CreatedBy", fields: [createdByUserId], references: [id])
+  businessCard    BusinessCard?
+  scans           Scan[]
+  subscriptions   Subscription[]
+  openingHours    OpeningHours[]
+  paymentMethods  MerchantPaymentMethod[]
+
+  @@unique([phoneNumber])
+  @@map("merchants")
+}
+
+// Modèle Carte de visite
+model BusinessCard {
+  id           String   @id @default(uuid())
+  merchantId   String   @unique
+  qrCode       String   @unique
+  qrCodeImage  String
+  publicUrl    String
+  cardType     PackType @default(BASIC)
+  nfcEnabled   Boolean  @default(false)
+  expiresAt    DateTime
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@map("business_cards")
+}
+
+// Modèle Scan
+model Scan {
+  id         String   @id @default(uuid())
+  merchantId String
+  userAgent  String?
+  ipAddress  String?
+  deviceType String?
+  scannedAt  DateTime @default(now())
+
+  // Relations
+  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@map("scans")
+}
+
+// Modèle Abonnement
+model Subscription {
+  id          String             @id @default(uuid())
+  merchantId  String
+  packType    PackType
+  price       Float
+  status      SubscriptionStatus @default(PENDING)
+  startDate   DateTime           @default(now())
+  endDate     DateTime
+  paymentId   String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  // Relations
+  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+// Modèle Horaires d'ouverture
+model OpeningHours {
+  id         String   @id @default(uuid())
+  merchantId String
+  dayOfWeek  Int      // 0 = Dimanche, 1 = Lundi, ..., 6 = Samedi
+  openTime   String
+  closeTime  String
+  isClosed   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@unique([merchantId, dayOfWeek])
+  @@map("opening_hours")
+}
+
+// Modèle Moyens de paiement du commerçant
+model MerchantPaymentMethod {
+  id            String         @id @default(uuid())
+  merchantId    String
+  method        PaymentMethod
+  accountNumber String
+  accountName   String
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  // Relations
+  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@map("merchant_payment_methods")
+}
