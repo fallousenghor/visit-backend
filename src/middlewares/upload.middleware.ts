@@ -1,12 +1,13 @@
 import multer from 'multer';
 import { Request } from 'express';
+import { RequestHandler } from 'express';
 
 // Configuration du stockage en mémoire
 const storage = multer.memoryStorage();
 
 // Filtre pour accepter uniquement les images
 const fileFilter = (
-  _req: Request,
+  req: Request,
   file: Express.Multer.File,
   cb: multer.FileFilterCallback
 ) => {
@@ -28,10 +29,11 @@ const upload = multer({
   },
 });
 
-export const uploadSingle = (fieldName: string) => upload.single(fieldName);
-export const uploadMultiple = (fieldName: string, maxCount: number) => 
-  upload.array(fieldName, maxCount);
-export const uploadFields = (fields: { name: string; maxCount: number }[]) => 
-  upload.fields(fields);
+export const uploadSingle = (fieldName: string): RequestHandler => 
+  upload.single(fieldName) as unknown as RequestHandler;
+export const uploadMultiple = (fieldName: string, maxCount: number): RequestHandler => 
+  upload.array(fieldName, maxCount) as unknown as RequestHandler;
+export const uploadFields = (fields: { name: string; maxCount: number }[]): RequestHandler => 
+  upload.fields(fields) as unknown as RequestHandler;
 
 export default upload;
