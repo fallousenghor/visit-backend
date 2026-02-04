@@ -19,7 +19,26 @@ const API_VERSION = process.env.API_VERSION || 'v1';
 // Middlewares de sécurité et configuration
 app.use(helmet()); // Sécurité des headers HTTP
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Normalize origin by removing trailing slash
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    
+    const allowedOrigins = [
+      process.env.FRONTEND_URL || 'http://localhost:5173',
+      (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, ''),
+      'https://visit-frontend-skf6-cprpme11x-fallousenghors-projects.vercel.app',
+      'https://visit-frontend-skf6-cprpme11x-fallousenghors-projects.vercel.app/',
+    ];
+    
+    if (allowedOrigins.includes(normalizedOrigin) || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 })); // CORS
 app.use(express.json({ limit: '10mb' })); // Parser JSON
