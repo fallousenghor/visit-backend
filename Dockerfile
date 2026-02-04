@@ -10,14 +10,14 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (skip postinstall to avoid build during install)
+RUN npm ci --ignore-scripts
+
+# Copy source code (includes prisma schema)
+COPY . .
 
 # Generate Prisma client
 RUN npx prisma generate
-
-# Copy source code
-COPY . .
 
 # Build TypeScript
 RUN npm run build
@@ -33,8 +33,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production
+# Install only production dependencies (skip postinstall which requires TypeScript)
+RUN npm ci --omit=dev --ignore-scripts
 
 # Copy Prisma schema and generated client from builder
 COPY --from=base /app/node_modules/.prisma ./node_modules/.prisma
