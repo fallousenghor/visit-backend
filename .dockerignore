@@ -1,0 +1,50 @@
+# Dependencies
+node_modules
+npm-debug.log
+
+# Build outputs
+dist
+build
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+
+# Logs
+logs
+*.log
+
+# Testing
+coverage
+.nyc_output
+
+# Documentation
+README.md
+docs
+
+# Docker
+Dockerfile
+docker-compose*.yml
+
+# Database
+*.db
+*.sqlite
+
+# Misc
+*.md
+.eslintrc*
+.prettierrc*

@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: smart-business-card-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci && npx prisma generate && npm run build
+    startCommand: node dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: API_VERSION
+        value: v1
+      - key: DATABASE_URL
+        fromDatabase:
+          name: smart-business-card-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        value: https://your-frontend-app.onrender.com
+      - key: CARD_PUBLIC_URL
+        value: https://your-frontend-app.onrender.com/card
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+databases:
+  - name: smart-business-card-db
+    plan: free
+    region: frankfurt
+    databaseName: smart_business_card
+    user: smart_business_card

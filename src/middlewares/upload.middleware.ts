@@ -1,13 +1,12 @@
 import multer from 'multer';
-import { Request } from 'express';
-import { RequestHandler } from 'express';
+import { Request, RequestHandler } from 'express';
 
 // Configuration du stockage en mémoire
 const storage = multer.memoryStorage();
 
 // Filtre pour accepter uniquement les images
 const fileFilter = (
-  req: Request,
+  _req: Request,
   file: Express.Multer.File,
   cb: multer.FileFilterCallback
 ) => {
