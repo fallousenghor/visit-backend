@@ -21,9 +21,9 @@ services:
       - key: JWT_EXPIRES_IN
         value: 7d
       - key: FRONTEND_URL
-        value: https://your-frontend-app.onrender.com
+        value: https://visit-frontend-skf6-cprpme11x-fallousenghors-projects.vercel.app
       - key: CARD_PUBLIC_URL
-        value: https://your-frontend-app.onrender.com/card
+        value: https://visit-frontend-skf6-cprpme11x-fallousenghors-projects.vercel.app/card
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY
