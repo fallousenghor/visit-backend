@@ -10,7 +10,7 @@ import {
 } from '../controllers/merchand.controller';
 import { authenticate, authorize } from '../middlewares/auth.middleware';
 import { validate } from '../middlewares/validation.middleware';
-import { uploadSingle } from '../middlewares/upload.middleware';
+import { uploadFields } from '../middlewares/upload.middleware';
 
 const router = Router();
 
@@ -49,7 +49,10 @@ router.use(authenticate);
 router.post(
   '/',
   authorize('ADMIN', 'AGENT'),
-  uploadSingle('logo'),
+  uploadFields([
+    { name: 'logo', maxCount: 1 },
+    { name: 'cv', maxCount: 1 }
+  ]),
   createMerchantValidation,
   validate,
   createMerchant
@@ -62,7 +65,10 @@ router.get('/:id', getMerchantById);
 router.put(
   '/:id',
   authorize('ADMIN', 'AGENT'),
-  uploadSingle('logo'),
+  uploadFields([
+    { name: 'logo', maxCount: 1 },
+    { name: 'cv', maxCount: 1 }
+  ]),
   updateMerchant
 );
 

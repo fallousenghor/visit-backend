@@ -2,7 +2,7 @@ import { Response } from 'express';
 import prisma from '../config/database';
 import { sendSuccess, sendError, sendCreated, sendNotFound } from '../utils/response';
 import { AuthRequest, CreateMerchantDTO, UpdateMerchantDTO } from '../utils';
-import { uploadQRCode, uploadLogo } from '../utils/uploads';
+import { uploadQRCode, uploadLogo, uploadCV } from '../utils/uploads';
 import { generateUniqueCode, generateQRCodeImage, generatePublicUrl } from '../utils/qrcode';
 import { PackType } from '../utils';
 
@@ -37,11 +37,33 @@ export const createMerchant = async (req: AuthRequest, res: Response): Promise<v
       console.log('No file in req.file');
     }
 
+    // Upload du CV si fourni (req.files peut contenir plusieurs fichiers)
+    let cvUrl: string | undefined;
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    if (files && files['cv'] && files['cv'][0]) {
+      const cvFile = files['cv'][0];
+      console.log('req.cv file details:', {
+        originalname: cvFile.originalname,
+        mimetype: cvFile.mimetype,
+        size: cvFile.size,
+      });
+      try {
+        const uploadResult = await uploadCV(cvFile.buffer, merchantData.businessName.replace(/\s+/g, '_').toLowerCase());
+        cvUrl = uploadResult.secureUrl;
+        console.log('CV uploaded successfully:', cvUrl);
+      } catch (uploadError) {
+        console.error('CV upload failed:', uploadError);
+      }
+    } else {
+      console.log('No cv file in req.files');
+    }
+
     // Créer le commerçant
     const merchant = await prisma.merchant.create({
       data: {
         ...merchantData,
         logo: logoUrl,
+        cvUrl: cvUrl,
         createdByUserId: req.user.id,
       },
       include: {
@@ -227,6 +249,7 @@ export const updateMerchant = async (req: AuthRequest, res: Response): Promise<v
 
     // Upload du nouveau logo si fourni
     let logoUrl = existingMerchant.logo;
+    let cvUrl = existingMerchant.cvUrl;
     console.log('=== UPDATE MERCHANT ===');
     console.log('req.file exists:', !!req.file);
     if (req.file) {
@@ -246,12 +269,33 @@ export const updateMerchant = async (req: AuthRequest, res: Response): Promise<v
       console.log('No file in req.file, keeping existing logo:', logoUrl);
     }
 
+    // Upload du nouveau CV si fourni
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    if (files && files['cv'] && files['cv'][0]) {
+      const cvFile = files['cv'][0];
+      console.log('req.cv file details:', {
+        originalname: cvFile.originalname,
+        mimetype: cvFile.mimetype,
+        size: cvFile.size,
+      });
+      try {
+        const uploadResult = await uploadCV(cvFile.buffer, id);
+        cvUrl = uploadResult.secureUrl;
+        console.log('CV uploaded successfully:', cvUrl);
+      } catch (uploadError) {
+        console.error('CV upload failed:', uploadError);
+      }
+    } else {
+      console.log('No cv file in req.files, keeping existing cv:', cvUrl);
+    }
+
     // Mettre à jour le commerçant
     const merchant = await prisma.merchant.update({
       where: { id },
       data: {
         ...updateData,
         logo: logoUrl,
+        cvUrl: cvUrl,
       },
       include: {
         businessCard: true,

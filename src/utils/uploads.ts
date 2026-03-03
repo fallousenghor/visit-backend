@@ -129,3 +129,43 @@ export const uploadLogo = async (
     throw new Error('Erreur lors de l\'upload du logo');
   }
 };
+
+export const uploadCV = async (
+  fileBuffer: Buffer,
+  merchantId: string
+): Promise<UploadResult> => {
+  try {
+    console.log('=== Début uploadCV ===');
+    console.log('Buffer size:', fileBuffer.length);
+    console.log('Merchant ID:', merchantId);
+
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'merchants/cv',
+          public_id: `cv_${merchantId}`,
+          resource_type: 'raw', // Pour les fichiers PDF
+          format: 'pdf',
+        },
+        (error, result) => {
+          if (error) {
+            console.error('Erreur Cloudinary uploadCV:', error);
+            reject(error);
+          } else if (result) {
+            console.log('UploadCV succès:', result.secure_url);
+            resolve({
+              publicId: result.public_id,
+              url: result.url,
+              secureUrl: result.secure_url,
+            });
+          }
+        }
+      );
+
+      uploadStream.end(fileBuffer);
+    });
+  } catch (error) {
+    console.error('Erreur dans uploadCV:', error);
+    throw new Error('Erreur lors de l\'upload du CV');
+  }
+};
