@@ -18,7 +18,7 @@ export const generateQRCodeImage = async (data: string): Promise<string> => {
     });
     return qrCodeDataURL;
   } catch (error) {
-    throw new Error('Erreur lors de la génération du QR code');
+    throw new Error('Erreur lors de la génération du QR code !');
   }
 };
 
