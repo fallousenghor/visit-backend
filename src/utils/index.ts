@@ -61,6 +61,7 @@ export interface CreateMerchantDTO {
   primaryColor?: string;
   secondaryColor?: string;
   useGradient?: boolean;
+  cvUrl?: string;
 }
 
 // Types pour la mise à jour d'un commerçant
@@ -82,6 +83,7 @@ export interface UpdateMerchantDTO {
   useGradient?: boolean;
   isActive?: boolean;
   isVerified?: boolean;
+  cvUrl?: string;
 }
 
 // Types pour les horaires d'ouverture
